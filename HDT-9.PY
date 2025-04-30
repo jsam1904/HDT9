@@ -1,9 +1,24 @@
+# -----------------------------------------------------------------------------
+# Archivo: HDT-9.PY
+# Descripción: Implementación de un compresor y descompresor basado en el 
+#              algoritmo de Huffman. Incluye funciones para compresión, 
+#              descompresión, serialización y deserialización del árbol de Huffman.
+# Creadores: Javier Alvarado - 24546, Juan Montenegro - 24750
+# -----------------------------------------------------------------------------
+
 from bitarray import bitarray
 import unittest
 
 print("Compresor HUFFMAN")
 
-# Contador de frecuencias
+# -----------------------------------------------------------------------------
+# Función: frecuencia
+# Descripción: Calcula la frecuencia de cada carácter en un texto dado.
+# Parámetros:
+#   - texto: Cadena de texto a analizar.
+# Retorna:
+#   - Diccionario con las frecuencias de cada carácter.
+# -----------------------------------------------------------------------------
 def frecuencia(texto):
     frecuencias = {}
     for caracter in texto:
@@ -13,14 +28,28 @@ def frecuencia(texto):
             frecuencias[caracter] = 1
     return frecuencias
 
-# Crear nodos para el árbol
+# -----------------------------------------------------------------------------
+# Función: crear_nodo
+# Descripción: Crea una lista de nodos a partir de las frecuencias de los caracteres.
+# Parámetros:
+#   - frecuencias: Diccionario con las frecuencias de los caracteres.
+# Retorna:
+#   - Lista de nodos (tuplas de frecuencia y carácter).
+# -----------------------------------------------------------------------------
 def crear_nodo(frecuencias):
     nodos = []
     for caracter, frecuencia in frecuencias.items():
         nodos.append((frecuencia, caracter))
     return nodos
 
-# Crear árbol de Huffman
+# -----------------------------------------------------------------------------
+# Función: crear_arbol
+# Descripción: Construye el árbol de Huffman a partir de una lista de nodos.
+# Parámetros:
+#   - nodos: Lista de nodos (tuplas de frecuencia y carácter).
+# Retorna:
+#   - Nodo raíz del árbol de Huffman.
+# -----------------------------------------------------------------------------
 def crear_arbol(nodos):
     while len(nodos) > 1:
         nodos.sort(key=lambda x: x[0])  # Ordenar por frecuencia
@@ -30,7 +59,14 @@ def crear_arbol(nodos):
         nodos.append(nuevo_nodo)
     return nodos[0]
 
-# Generar códigos de Huffman
+# -----------------------------------------------------------------------------
+# Función: generar_codigos
+# Descripción: Genera los códigos de Huffman para cada carácter.
+# Parámetros:
+#   - nodo: Nodo raíz del árbol de Huffman.
+#   - codigo_actual: Código actual (bitarray).
+#   - codigos: Diccionario donde se almacenarán los códigos generados.
+# -----------------------------------------------------------------------------
 def generar_codigos(nodo, codigo_actual, codigos):
     if isinstance(nodo[1], str):  # Nodo hoja
         codigos[nodo[1]] = codigo_actual.to01() or '0'  # Evitar códigos vacíos
@@ -38,7 +74,13 @@ def generar_codigos(nodo, codigo_actual, codigos):
         generar_codigos(nodo[1][0], codigo_actual + bitarray('0'), codigos)  # Izquierda
         generar_codigos(nodo[1][1], codigo_actual + bitarray('1'), codigos)  # Derecha
 
-# Serializar el árbol a un archivo de texto
+# -----------------------------------------------------------------------------
+# Función: serializar_arbol
+# Descripción: Serializa el árbol de Huffman y lo guarda en un archivo.
+# Parámetros:
+#   - nodo: Nodo raíz del árbol de Huffman.
+#   - archivo: Archivo donde se guardará el árbol serializado.
+# -----------------------------------------------------------------------------
 def serializar_arbol(nodo, archivo):
     if isinstance(nodo[1], str):  # Nodo hoja
         char = nodo[1]
@@ -51,7 +93,14 @@ def serializar_arbol(nodo, archivo):
         serializar_arbol(nodo[1][0], archivo)  # Izquierda
         serializar_arbol(nodo[1][1], archivo)  # Derecha
 
-# Deserializar el árbol desde un archivo de texto
+# -----------------------------------------------------------------------------
+# Función: deserializar_arbol
+# Descripción: Deserializa un árbol de Huffman desde un archivo.
+# Parámetros:
+#   - archivo: Archivo que contiene el árbol serializado.
+# Retorna:
+#   - Nodo raíz del árbol de Huffman y la longitud del texto original.
+# -----------------------------------------------------------------------------
 def deserializar_arbol(archivo):
     content = archivo.read().strip()
     if not content:  # Handle empty file
@@ -85,7 +134,14 @@ def deserializar_arbol(archivo):
     arbol, _ = construir_arbol([0])
     return arbol, text_length
 
-# Comprimir texto
+# -----------------------------------------------------------------------------
+# Función: comprimir
+# Descripción: Comprime un texto utilizando el algoritmo de Huffman.
+# Parámetros:
+#   - texto: Texto a comprimir.
+# Retorna:
+#   - Objeto bitarray con el texto comprimido.
+# -----------------------------------------------------------------------------
 def comprimir(texto):
     if not texto:  # Handle empty input
         with open("arbol.hufftree", "w", encoding='utf-8') as f:
@@ -108,7 +164,15 @@ def comprimir(texto):
         huffman.extend(codigos[caracter])
     return huffman
 
-# Descomprimir texto
+# -----------------------------------------------------------------------------
+# Función: descomprimir
+# Descripción: Descomprime un archivo comprimido utilizando el árbol de Huffman.
+# Parámetros:
+#   - archivo_comprimido: Archivo binario comprimido.
+#   - archivo_arbol: Archivo que contiene el árbol de Huffman serializado.
+# Retorna:
+#   - Texto descomprimido.
+# -----------------------------------------------------------------------------
 def descomprimir(archivo_comprimido, archivo_arbol):
     # Leer el árbol y la longitud del texto
     with open(archivo_arbol, "r", encoding='utf-8') as f:
@@ -139,13 +203,23 @@ def descomprimir(archivo_comprimido, archivo_arbol):
     
     return ''.join(texto)
 
-# Leer archivo de texto
+# -----------------------------------------------------------------------------
+# Función: leer_archivo
+# Descripción: Lee el contenido de un archivo de texto.
+# Parámetros:
+#   - archivo: Ruta del archivo a leer.
+# Retorna:
+#   - Contenido del archivo como cadena de texto.
+# -----------------------------------------------------------------------------
 def leer_archivo(archivo):
     with open(archivo, 'r', encoding='utf-8') as f:
         texto = f.read()
     return texto
 
-# Menú principal
+# -----------------------------------------------------------------------------
+# Función: main
+# Descripción: Menú principal para interactuar con el compresor y descompresor.
+# -----------------------------------------------------------------------------
 def main():
     opcion = 0
     while opcion != 3:
@@ -182,7 +256,11 @@ def main():
         elif opcion != 3:
             print("Opción inválida")
 
-# Pruebas unitarias
+# -----------------------------------------------------------------------------
+# Clase: TestHuffman
+# Descripción: Pruebas unitarias para verificar el correcto funcionamiento del
+#              compresor y descompresor de Huffman.
+# -----------------------------------------------------------------------------
 class TestHuffman(unittest.TestCase):
     def setUp(self):
         self.test_file = "test.txt"
